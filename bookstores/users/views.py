@@ -14,6 +14,8 @@ import re
 import redis
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired
+from django_redis import get_redis_connection
+from books.models import Books
 def register(request):
     return render(request,'users/register.html')
 
@@ -94,9 +96,15 @@ def cache_clean():
 def user(request):
     passport_id =request.session.get('passport_id')
     addr = Address.objects.get_default_address(passport_id=passport_id)
+    con = get_redis_connection('default')
+    key = "history_%d"%passport_id
+    history_li = con.lrange(key,0,4)
 
     books_li=[]
-
+    print(history_li)
+    for id in history_li:
+        books = Books.object.get_books_by_id(books_id=id)
+        books_li.append(books)
     context ={
         'addr':addr,
         'page':'user',

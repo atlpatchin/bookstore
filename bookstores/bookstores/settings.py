@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'order.apps.OrderConfig',
     'comments.apps.CommentsConfig',
     'haystack',
+    'users.templatetags.filters'
 ]
 
 MIDDLEWARE = [
@@ -53,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 TINYNCE_DEFAULT_CONFIG={
     'theme':'advanced',

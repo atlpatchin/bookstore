@@ -153,40 +153,40 @@ def order_pay(request):
     pay_url = settings.ALIPAY_URL+'?'+order_string
     return JsonResponse({'res':3,'pay_url':pay_url,'message':'OK'})
 
-# @login_required
-# def check_pay(request):
-#     passport_id =request.session.get('passport_id')
-#     order_id = request.POST.get('order_id')
-#
-#     if not order_id:
-#         return JsonResponse({'res':1,'errmsg':'订单不存在'})
-#     try:
-#         order = OrderInfo.objects.get(order_id=order_id,
-#                                       passport_id=passport_id,
-#                                       pay_method=3
-#                                       )
-#     except OrderInfo.DoesNotExist:
-#         return JsonResponse({'res':2,'errmsg':'订单信息出错'})
-#
-#     alipay = AliPay(
-#         appid='2016092300577139',
-#         app_notify_url=None,
-#         app_private_key_path=APP_PRIVATE_KEY_PATH,
-#         alipay_public_key_path=ALIPAY_PUBLIC_KEY_PATH,  # 支付宝的公钥，验证支付宝回传消息使用，不是你自己的公钥,
-#         debug=True,  # 默认False,
-#         sign_type='RSA2'
-#     )
-#     while True:
-#         result=alipay.api_alipay_trade_query(order_id)
-#         code=result.get('code')
-#         if code =='10000' and result.get('trade_status')=='TRADE_SUCCESS':
-#             order.status=2
-#             order.trade_id = result.get('trade_no')
-#
-#             order.save()
-#             return JsonResponse({'res':3,'message':'支付成功'})
-#         elif code=='40004' or(code=='10000' and result.get('trade_status')=='WAIT_BUYER_PAY'):
-#             time.sleep(5)
-#             continue
-#         else:
-#             return JsonResponse({'res':4,'errmsg':'支付出错'})
+@login_required
+def check_pay(request):
+    passport_id =request.session.get('passport_id')
+    order_id = request.POST.get('order_id')
+
+    if not order_id:
+        return JsonResponse({'res':1,'errmsg':'订单不存在'})
+    try:
+        order = OrderInfo.objects.get(order_id=order_id,
+                                      passport_id=passport_id,
+                                      pay_method=3
+                                      )
+    except OrderInfo.DoesNotExist:
+        return JsonResponse({'res':2,'errmsg':'订单信息出错'})
+
+    alipay = AliPay(
+        appid='2016092300577139',
+        app_notify_url=None,
+        app_private_key_path=APP_PRIVATE_KEY_PATH,
+        alipay_public_key_path=ALIPAY_PUBLIC_KEY_PATH,  # 支付宝的公钥，验证支付宝回传消息使用，不是你自己的公钥,
+        debug=True,  # 默认False,
+        sign_type='RSA2'
+    )
+    while True:
+        result=alipay.api_alipay_trade_query(order_id)
+        code=result.get('code')
+        if code =='10000' and result.get('trade_status')=='TRADE_SUCCESS':
+            order.status=2
+            order.trade_id = result.get('trade_no')
+
+            order.save()
+            return JsonResponse({'res':3,'message':'支付成功'})
+        elif code=='40004' or(code=='10000' and result.get('trade_status')=='WAIT_BUYER_PAY'):
+            time.sleep(5)
+            continue
+        else:
+            return JsonResponse({'res':4,'errmsg':'支付出错'})

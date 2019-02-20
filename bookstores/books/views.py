@@ -5,6 +5,7 @@ from books.enums import *
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
 from django.views.decorators.cache import cache_page
+from django_redis import get_redis_connection
 @cache_page(60*15)
 def index(request):
     python_new = Books.object.get_books_by_type(PYTHON,limit=3,sort='new')
@@ -42,8 +43,15 @@ def detail(request,books_id):
     if books is None:
         return redirect(reverse('books:index'))
     books_li=Books.object.get_books_by_type(type_id=books.type_id,limit=2,sort='new')
-
     type_title = BOOKS_TYPE[books.type_id]
+    if request.session.has_key("islogin"):
+        con = get_redis_connection('default')
+        key = 'history_%d' % request.session.get('passport_id')
+        con.lrem(key, 0, books.id)
+        con.lpush(key,books.id)
+        con.ltrim(key,0,4)
+
+
     context = {'books':books,'books_li':books_li,'type_title':type_title}
 
     return render(request,'books/detail.html',context)
@@ -55,6 +63,7 @@ def list(request,type_id,page):
         return redirect(reverse('books:index'))
 
     books_li = Books.object.get_books_by_type(type_id=type_id,sort=sort)
+
 
     paginator = Paginator(books_li,1)
     num_pages= paginator.num_pages
@@ -85,3 +94,4 @@ def list(request,type_id,page):
         'pages': pages
     }
     return render(request,'books/list.html',context)
+
